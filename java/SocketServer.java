@@ -32,12 +32,12 @@ public class SocketServer {
                     while (true) {
                         byte[] byteArr = new byte[100];
                         ServerSocket androidServerSocket = new ServerSocket(androidPortNumber); //포트번호를 매개변수로 전달하면서 서버 소켓 열기
-                        System.out.println("안드로이드 포트 " + androidPortNumber + "에서 요청 대기중...");
+                        //System.out.println("안드로이드 포트 " + androidPortNumber + "에서 요청 대기중...");
                         Socket androidSocket = androidServerSocket.accept();
                         InetAddress androidHost = androidSocket.getLocalAddress();
                         int androidPort = androidSocket.getPort();
 
-                        System.out.println("안드로이드 클라이언트 연결됨. 호스트 : " + androidHost + ", 포트 : " + androidPort);
+                        //System.out.println("안드로이드 클라이언트 연결됨. 호스트 : " + androidHost + ", 포트 : " + androidPort);
                         if (raspberryServerSocket.isBound() && !raspberryServerSocket.isClosed() == false) {
                             System.out.println("라즈베리파소켓 닫힘");
                             break;
@@ -65,40 +65,52 @@ public class SocketServer {
                             data = new byte[length1];
                             raspberryReceiver.read(data, 0, length1);
                             String msg1 = new String(data, "UTF-8");
-                            System.out.println("라즈베리파이 클라이언트로부터 받은 데이터 : " + msg1);
+                            System.out.println("라즈베리파이 통신상태 : " + msg1);
                         }
                         catch(Exception e){
                             androidSocket.close();
                             androidServerSocket.close();
                         }
 
-                        Object input = instream.readObject();
-                        String androidData = (String) input;
+                        Object input;
+                        String androidData[] = new String[3];
 
-                        System.out.println("안드로이드 클라이언트로부터 받은 데이터 : " + androidData); // 안드로이드 신호 서버에 출력
-
-                        if ("on".equals(androidData) == true) {
-                            System.out.println("정답");
-                            msg = "on";
-                            data = msg.getBytes();
-                            b = ByteBuffer.allocate(4);
-                            b.order(ByteOrder.LITTLE_ENDIAN);
-                            b.putInt(data.length);
-                            raspberrySender.write(b.array(), 0, 4);
-                            raspberrySender.write(data);
-
-                        } else {
-                            System.out.println("다름");
-                            msg = "off";
-                            data = msg.getBytes();
-                            b = ByteBuffer.allocate(4);
-                            b.order(ByteOrder.LITTLE_ENDIAN);
-                            b.putInt(data.length);
-                            raspberrySender.write(b.array(), 0, 4);
-                            raspberrySender.write(data);
-
+                        for(int i = 0; i < 3; i++)
+                        {
+                            input = instream.readObject();
+                            androidData[i] = (String) input;
                         }
 
+                        if ("in".equals(androidData[0]) == true) {
+                            System.out.println(" -------------승차 정보---------------");
+                            System.out.println("|                                    |");
+                            System.out.println("|                                    |");
+                            System.out.println("| 출발지 : " + androidData[1]);
+                            System.out.println("|                                    |");
+                            System.out.println("| 도착지 : " + androidData[2]);
+                            System.out.println("|                                    |");
+                            System.out.println("|                                    |");
+                            System.out.println(" ____________________________________");
+
+                            for(int i = 0; i < 3; i++) {
+                                data = androidData[i].getBytes();
+                                b = ByteBuffer.allocate(4);
+                                b.order(ByteOrder.LITTLE_ENDIAN);
+                                b.putInt(data.length);
+                                raspberrySender.write(b.array(), 0, 4);
+                                raspberrySender.write(data);
+                            }
+                        } else {
+                            for(int i = 0; i < 3; i++) {
+                                data = androidData[i].getBytes();
+                                b = ByteBuffer.allocate(4);
+                                b.order(ByteOrder.LITTLE_ENDIAN);
+                                b.putInt(data.length);
+                                raspberrySender.write(b.array(), 0, 4);
+                                raspberrySender.write(data);
+                            }
+                        }
+                        /*
                         data = new byte[4];
                         raspberryReceiver.read(data, 0, 4);
                         b = ByteBuffer.wrap(data);
@@ -107,10 +119,12 @@ public class SocketServer {
                         data = new byte[length];
                         raspberryReceiver.read(data, 0, length);
                         msg = new String(data, "UTF-8");
-                        System.out.println("라즈베리파이 클라이언트로부터 받은 데이터 : " + msg);
+                        //System.out.println("라즈베리파이 클라이언트로부터 받은 데이터 : " + msg);
                         //소켓의 출력 스트림 객체 참조
                         androidOutstream.writeObject((Object) msg); //출력 스트림에 응답 넣기
                         androidOutstream.flush(); // 출력
+                        */
+
                         androidSocket.close();
                         androidServerSocket.close();
 
@@ -120,7 +134,6 @@ public class SocketServer {
                     raspberryServerSocket.close();
                     raspberrySocket.close();
                 }
-
 
             } catch (Exception e) {
                 e.printStackTrace();

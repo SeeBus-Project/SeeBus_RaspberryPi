@@ -21,7 +21,6 @@ import android.widget.TextView;
 
 
 public class MainActivity extends AppCompatActivity {
-    Handler mHandler;
     String response;
     EditText pt;
 
@@ -52,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void clickOnButton(View v) {
-        thread = new ClientThread();
+        ClientThread thread = new ClientThread();
         thread.signal = "on";
         String data = pt.getText().toString();
         try{
